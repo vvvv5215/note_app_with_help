@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>Note taking tool</title>
+<title>Task Master</title>
 {% endblock %}
 
 {% block body %}
 <div class="content">
-    <h1 style="text-align: center">Update Note!</h1>
+    <h1 style="text-align: center">Update Task</h1>
 
     <div class="form">
         <form action="/update/{{task.id}}" method="POST">
