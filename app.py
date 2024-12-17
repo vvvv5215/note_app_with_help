@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import logging
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Add this to silence a warning
 db = SQLAlchemy(app)
+
+logging.basicConfig(level=logging.DEBUG)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,6 +17,10 @@ class Todo(db.Model):
 
     def __repr__(self):
         return '<Task %r>' % self.id
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -27,7 +35,8 @@ def add_task():
         db.session.add(new_task)
         db.session.commit()
         return redirect('/')
-    except:
+    except Exception as e:
+        logging.error(f"Error adding task: {e}")
         return 'There was an issue adding your task'
 
 @app.route('/delete/<int:id>', methods=['POST'])
@@ -37,7 +46,8 @@ def delete_task(id):
         db.session.delete(task_to_delete)
         db.session.commit()
         return redirect('/')
-    except:
+    except Exception as e:
+        logging.error(f"Error deleting task: {e}")
         return 'There was a problem deleting that task'
 
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
@@ -48,7 +58,8 @@ def update_task(id):
         try:
             db.session.commit()
             return redirect('/')
-        except:
+        except Exception as e:
+            logging.error(f"Error updating task: {e}")
             return 'There was an issue updating your task'
     else:
         return render_template('update.html', task=task)
