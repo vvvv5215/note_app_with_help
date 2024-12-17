@@ -1,10 +1,11 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import logging
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app = Flask(__name__, instance_relative_config=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'test.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To silence a warning
 db = SQLAlchemy(app)
 
@@ -20,7 +21,12 @@ class Todo(db.Model):
 
 @app.before_first_request
 def create_tables():
-    db.create_all()
+    try:
+        if not os.path.exists(app.instance_path):
+            os.makedirs(app.instance_path)
+        db.create_all()
+    except Exception as e:
+        logging.error(f"Error creating tables: {e}")
 
 @app.route('/')
 def index():
