@@ -5,7 +5,7 @@ import logging
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Add this to silence a warning
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To silence a warning
 db = SQLAlchemy(app)
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,12 +24,20 @@ def create_tables():
 
 @app.route('/')
 def index():
-    tasks = Todo.query.order_by(Todo.date_created).all()
-    return render_template('index.html', tasks=tasks)
+    try:
+        tasks = Todo.query.order_by(Todo.date_created).all()
+        return render_template('index.html', tasks=tasks)
+    except Exception as e:
+        logging.error(f"Error loading tasks: {e}")
+        return 'There was an issue loading the tasks'
 
 @app.route('/add', methods=['POST'])
 def add_task():
     task_content = request.form['content']
+    if not task_content:
+        logging.error("Task content is empty")
+        return 'Task content cannot be empty'
+    
     new_task = Todo(content=task_content)
     try:
         db.session.add(new_task)
@@ -55,6 +63,10 @@ def update_task(id):
     task = Todo.query.get_or_404(id)
     if request.method == 'POST':
         task.content = request.form['content']
+        if not task.content:
+            logging.error("Updated task content is empty")
+            return 'Task content cannot be empty'
+        
         try:
             db.session.commit()
             return redirect('/')
