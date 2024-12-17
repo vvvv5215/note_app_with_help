@@ -6,36 +6,33 @@
 
 {% block body %}
 <div class="content">
-    <h1 style="text-align: center">Note Making Tool</h1>
+    <h1 style="text-align: center">Task Master</h1>
     {% if tasks|length < 1 %}
-    <h4 style="text-align: center">Create one below!</h4>
+    <h4 style="text-align: center">There are no tasks. Create one below!</h4>
     {% else %}
     <table>
         <tr>
-            <th>New note</th>
+            <th>Task</th>
             <th>Added</th>
             <th>Actions</th>
         </tr>
         {% for task in tasks %}
-        <tr>
-            <td>{{ task.content }}</td>
-            <td>{{ task.date_created.date() }}</td>
-            <td>
-                <form action="/update/{{task.id}}" method="GET" style="display: inline;">
-                    <button type="submit">Update</button>
-                </form>
-                <form action="/delete/{{task.id}}" method="POST" style="display: inline;">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
+            <tr>
+                <td>{{ task.content }}</td>
+                <td>{{ task.date_created.date() }}</td>
+                <td>
+                    <a href="/delete/{{task.id}}">Delete</a>
+                    <br>
+                    <a href="/update/{{task.id}}">Update</a>
+                </td>
+            </tr>
         {% endfor %}
     </table>
     {% endif %}
 
     <div class="form">
-        <form action="/add" method="POST">
-            <input type="text" name="content" id="content" placeholder="Add new task">
+        <form action="/" method="POST">
+            <input type="text" name="content" id="content">
             <input type="submit" value="Add Task">
         </form>
     </div>
